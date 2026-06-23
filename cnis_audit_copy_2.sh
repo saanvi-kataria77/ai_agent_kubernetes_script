@@ -80,12 +80,6 @@ function ccd_audit() {
 
     echo "${RAW_EVENTS_JSON}" | jq -c '.items | map(select(.type == "Warning")) | map({event_namespace: .metadata.namespace, reason: .reason, labels: .type, kind: .involvedObject.kind, name: .involvedObject.name, message: .message})' > output_for_llm.json
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # ENTRY POINT
-  # ─────────────────────────────────────────────────────────────────────────
-  # echo "==="
-  # echo "[INFO] JSON CREATED : ${RAW_EVENTS_JSON}"
-
   _ask_llm() {
 
     local CLUSTER_STATE=$(< output_for_llm.json)
@@ -118,7 +112,7 @@ function ccd_audit() {
       }'
     )
 
-  # add a simple error check of returning API error and then exiting, can try again after 5 seconds, 10 seconds, etc. then quitting by exit 1
+  
    HTTP_STATUS=$(curl -X POST -s -o api_response.json -w "%{http_code}" "$API_ENDPOINT" \
       -H "$AUTH_HEADER" \
       -H 'Content-Type: application/json' \
@@ -129,7 +123,7 @@ function ccd_audit() {
    if [ "$HTTP_STATUS" -ne 200 ]; then
     echo "API Error (HTTP Status $HTTP_STATUS):" >&2 # redirects the stdout to the stderr stream
     cat api_response.json >&2
-    # would you still like to continue?
+    
     exit 1
    else 
     LLM_RESPONSE=$(jq -r '.choices[0].message.content' api_response.json)
@@ -141,9 +135,8 @@ function ccd_audit() {
 
   _human_in_the_loop() {
     # use saved output, RECOMMENDED_CMD
-    # wait. don't I also want the actual problem statement or warning message to be visible to the user? So they know what the problem is. 
-    # maybe can have the LLM be like "message: IMGPull whatever...the LLM explains the problem, and THEN suggests then the recommended command. "
-
+    # want the actual problem statement visible to user, have the LLM strictly respond with the problem and recommended command
+    
     echo "Here is the problem message:" 
     echo "$LLM_RESPONSE" | jq -r '.problem'
     RECOMMENDED_CMD=$(echo "$LLM_RESPONSE" | jq -r '.recommended_command')
@@ -171,8 +164,6 @@ function ccd_audit() {
   }
 
   _ask_llm_again() {
-    # make a new json with relevant information, filter out to get whatever I need.
-    # aggreggate everything to a variable called API_ANSWER
    local SECOND_API_PAYLOAD=$(jq -n \
       --arg model_id "$MODEL_NAME" \
       --arg text_prompt "Analyze this terminal output. If the output shows the issue is resolved, output a final success summary. 
@@ -200,7 +191,7 @@ function ccd_audit() {
       }'
     )
 
-      # add a simple error check of returning API error and then exiting, can try again after 5 seconds, 10 seconds, etc. then quitting by exit 1
+    
    HTTP_STATUS_2=$(curl -X POST -s -o api_response2.json -w "%{http_code}" "$API_ENDPOINT" \
       -H "$AUTH_HEADER" \
       -H 'Content-Type: application/json' \
@@ -211,7 +202,7 @@ function ccd_audit() {
    if [ "$HTTP_STATUS_2" -ne 200 ]; then
     echo "API Error (HTTP Status $HTTP_STATUS_2):" >&2 # redirects the stdout to the stderr stream
     cat api_response2.json >&2
-    # would you still like to continue?
+    
     exit 1
    else 
     LLM_RESPONSE_2=$(jq -r '.choices[0].message.content' api_response2.json)
@@ -233,20 +224,19 @@ function ccd_audit() {
     _ask_llm_again
     CURRENT_STATUS=$(echo "$LLM_RESPONSE_2" | jq -r '.status')
 
-    LLM_RESPONSE="$LLM_RESPONSE_2" #overwrite so next loop iteration has new command 
-    FINAL_SUMMARY=$(echo "$LLM_RESPONSE_2" | jq -r '.problem') # updating a summary 
+    LLM_RESPONSE="$LLM_RESPONSE_2" # overwrite so next loop iteration has new command 
+    FINAL_SUMMARY=$(echo "$LLM_RESPONSE_2" | jq -r '.problem') # updating a summary, still debugging this 
 
     ((LOOP_COUNT++))
   done
   
     
-  # 3. The Final Exit Check
+  # a final exit check 
   if [[ "$CURRENT_STATUS" == "resolved" ]]; then
       echo "✅ Diagnostics complete. Issue resolved!"
       echo "$FINAL_SUMMARY"
-      # You can echo the final summary here!
   else
-      echo "Circuit breaker triggered. AI failed to resolve the issue after $MAX_LOOPS attempts."
+      echo "AI failed to resolve the issue after $MAX_LOOPS attempts."
   fi
  }
 
@@ -254,7 +244,3 @@ if [ "$RUN_CCD" = true ]; then
   ccd_audit 
 fi 
 
-
-# Create a while loop structure so it can keep running commands to debug issues without me having to call human in the loop again.
-# Also interesting to investigate that they both show different errors first (Groq showing the image back off, ollama showing some Komodor pod status ready error first)
-# That's because of the parameter usage and phi3 being much smaller. Can explain that in the GitHub
