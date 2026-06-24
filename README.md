@@ -18,9 +18,9 @@ It handles automated argument parsing (queue-shifting flags) to configure the ta
 
 ### How it works
 The agent operates on a continuous feedback loop driven by three core functions:
-```_ask_llm()```: Ingests the initial cluster warning JSON and outputs a structured diagnosis and recommended command.
-```_human_in_the_loop()```: Intercepts the workflow, displays the AI's reasoning, and waits for user validation (y/n). If approved, it executes the command within an error-catching sandbox (set +e) and captures the resulting terminal output.
-```_ask_llm_again()```: Ingests the terminal output from the previous execution. The AI evaluates if the output indicates a resolved state or if further debugging is required, generating the next command and perpetuating the while loop until the issue is solved.
+- ```_ask_llm()```: Ingests the initial cluster warning JSON and outputs a structured diagnosis and recommended command.
+- ```_human_in_the_loop()```: Intercepts the workflow, displays the AI's reasoning, and waits for user validation (y/n). If approved, it executes the command within an error-catching sandbox (set +e) and captures the resulting terminal output.
+- ```_ask_llm_again()```: Ingests the terminal output from the previous execution. The AI evaluates if the output indicates a resolved state or if further debugging is required, generating the next command and perpetuating the while loop until the issue is solved.
 
 ### Integration in AI Systems
 This script serves as a foundational blueprint for integrating LLMs into cloud-native orchestration. The architecture can be easily expanded to:
@@ -32,21 +32,21 @@ Orchestrate multi-agent workflows where a "Diagnostic Agent" (Phi-3) hands off a
 
 ### Prerequisites
 To run this script, your local machine must have the following installed:
-```kubectl``` (Configured to a running cluster, e.g., Minikube)
-```jq``` (Command-line JSON processor)
-```curl``` (For HTTP requests)
+- ```kubectl``` (Configured to a running cluster, e.g., Minikube)
+- ```jq``` (Command-line JSON processor)
+- ```curl``` (For HTTP requests)
 
 **Local Engine (Default)**
-Install [Ollama](https://ollama.com)
-Pull the Phi-3 model: ```ollama run phi3``` (Ensure the server is running on port 11434).
+- Install [Ollama](https://ollama.com)
+- Pull the Phi-3 model: ```ollama run phi3``` (Ensure the server is running on port 11434).
 
 **Cloud Engine**
 A free [Groq API Key](https://groq.com)
 
 ### Setup 
 Clone the repository:
-```git clone https://github.com/saanvi-kataria77/ai_agent_kubernetes_script.git```
-```cd kubernetes_script```
+- ```git clone https://github.com/saanvi-kataria77/ai_agent_kubernetes_script.git```
+- ```cd kubernetes_script```
 Make the script executable:
 ```bash 
  $ chmod +x kubernetes_script.sh
