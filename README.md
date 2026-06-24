@@ -36,12 +36,12 @@ To run this script, your local machine must have the following installed:
 - ```jq``` (Command-line JSON processor)
 - ```curl``` (For HTTP requests)
 
-**Local Engine (Default)**
+**Local Engine (Default):**
 - Install [Ollama](https://ollama.com)
 - Pull the Phi-3 model: ```ollama run phi3``` (Ensure the server is running on port 11434).
 
-**Cloud Engine**
-A free [Groq API Key](https://groq.com)
+**Cloud Engine:**
+- A free [Groq API Key](https://groq.com)
 
 ### Setup 
 Clone the repository:
