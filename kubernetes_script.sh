@@ -234,7 +234,8 @@ function ccd_audit() {
   # a final exit check 
   if [[ "$CURRENT_STATUS" == "resolved" ]]; then
       echo "✅ Diagnostics complete. Issue resolved!"
-      echo "$FINAL_SUMMARY"
+      echo "$FINAL_SUMMARY" > log_of_agent.txt
+      # building an audit log --> just getting this output to a txt file 
   else
       echo "AI failed to resolve the issue after $MAX_LOOPS attempts."
   fi
@@ -243,4 +244,6 @@ function ccd_audit() {
 if [ "$RUN_CCD" = true ]; then 
   ccd_audit 
 fi 
+
+# first run with GroqAPI and see if a final summary or txt file can be made. if not, can make more types of problems within the node. 
 
