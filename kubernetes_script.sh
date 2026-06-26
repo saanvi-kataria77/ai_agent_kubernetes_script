@@ -226,20 +226,28 @@ function ccd_audit() {
 
     LLM_RESPONSE="$LLM_RESPONSE_2" # overwrite so next loop iteration has new command 
     FINAL_SUMMARY=$(echo "$LLM_RESPONSE_2" | jq -r '.problem') # updating a summary, still debugging this 
+    # get all of them in one, not just the last command or reasoning
 
     ((LOOP_COUNT++))
+    echo "$FINAL_SUMMARY" > log_of_agent.txt
+
   done
   
     
   # a final exit check 
   if [[ "$CURRENT_STATUS" == "resolved" ]]; then
       echo "✅ Diagnostics complete. Issue resolved!"
-      echo "$FINAL_SUMMARY" > log_of_agent.txt
       # building an audit log --> just getting this output to a txt file 
   else
       echo "AI failed to resolve the issue after $MAX_LOOPS attempts."
+      echo "$FINAL_SUMMARY" > log_of_agent_failed.txt
+      # still make the log when failed to summarize commands tried. 
   fi
  }
 
-# first run with GroqAPI and see if a final summary or txt file can be made. if not, can make more types of problems within the node. 
+# now it is, but i am not sure where it is getting that. if not, can make more types of problems within the node. 
 
+
+if [[ "$RUN_CCD" = true ]]; then 
+  ccd_audit 
+fi 
