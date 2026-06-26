@@ -241,9 +241,5 @@ function ccd_audit() {
   fi
  }
 
-if [ "$RUN_CCD" = true ]; then 
-  ccd_audit 
-fi 
-
 # first run with GroqAPI and see if a final summary or txt file can be made. if not, can make more types of problems within the node. 
 
